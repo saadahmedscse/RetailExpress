@@ -1,4 +1,4 @@
-package com.example.authenticationservice;
+package com.saadahmedev.authenticationservice;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
