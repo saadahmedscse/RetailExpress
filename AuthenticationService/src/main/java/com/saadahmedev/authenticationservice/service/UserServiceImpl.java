@@ -26,7 +26,7 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
 
     @Override
-    public ResponseEntity<?> createCustomer(UserRequest userRequest) {
+    public ResponseEntity<?> createUser(UserRequest userRequest) {
         ResponseEntity<?> validationResult = requestValidator.isUserRequestValid(userRequest);
         if (validationResult.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)) return validationResult;
 
