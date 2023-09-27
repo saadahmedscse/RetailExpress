@@ -6,7 +6,7 @@ spring:
     name: authentication-service
 
   datasource:
-    url: jdbc:mysql://localhost:3306/authentication_service
+    url: jdbc:mysql://localhost:3306/user_service
     username: root
     password: vampire
     driver-class-name: com.mysql.cj.jdbc.Driver
