@@ -13,8 +13,8 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
-    @PostMapping("/create/customer")
-    public ResponseEntity<?> createCustomer(@RequestBody UserRequest userRequest) {
-        return userService.createCustomer(userRequest);
+    @PostMapping("/create")
+    public ResponseEntity<?> createUser(@RequestBody UserRequest userRequest) {
+        return userService.createUser(userRequest);
     }
 }
