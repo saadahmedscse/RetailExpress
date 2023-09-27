@@ -7,5 +7,5 @@ import org.springframework.stereotype.Service;
 @Service
 public interface UserService {
 
-    ResponseEntity<?> createCustomer(UserRequest userRequest);
+    ResponseEntity<?> createUser(UserRequest userRequest);
 }
