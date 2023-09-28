@@ -1,5 +1,6 @@
 package com.saadahmedev.authenticationservice.service;
 
+import com.saadahmedev.authenticationservice.dto.LoginRequest;
 import com.saadahmedev.authenticationservice.dto.UserRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -8,4 +9,6 @@ import org.springframework.stereotype.Service;
 public interface UserService {
 
     ResponseEntity<?> createUser(UserRequest userRequest);
+
+    ResponseEntity<?> login(LoginRequest loginRequest);
 }
