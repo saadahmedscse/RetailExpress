@@ -2,6 +2,7 @@ package com.saadahmedev.apigateway.security;
 
 import com.saadahmedev.apigateway.repository.TokenRepository;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -41,9 +42,12 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                     return sendErrorResponse(response, "Bearer token is required");
                 }
 
-                String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                if (token == null)  return sendErrorResponse(response, "Bearer token is required");
-                if (!token.startsWith("Bearer ") || token.length() < 25) return sendErrorResponse(response, "Token does not match with JWT Token");
+                String authorization = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+
+                if (authorization == null)  return sendErrorResponse(response, "Bearer token is required");
+                if (!authorization.startsWith("Bearer ") && authorization.split(" ")[1] == null || authorization.split(" ")[1].isEmpty()) return sendErrorResponse(response, "Bearer token is required");
+
+                String token = authorization.substring(7);
 
                 try {
                     if (!jwtUtil.isTokenValid(token)) return sendErrorResponse(response, "Token has been expired");
@@ -51,6 +55,9 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                     if (e instanceof ExpiredJwtException) {
                         tokenRepository.deleteById(token);
                         return sendErrorResponse(response, "Token has been expired");
+                    }
+                    if (e instanceof MalformedJwtException) {
+                        return sendErrorResponse(response, "Invalid JWT Token");
                     }
                     else return sendErrorResponse(response, e.getLocalizedMessage());
                 }
