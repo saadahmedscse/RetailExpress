@@ -6,6 +6,7 @@ import com.saadahmedev.authenticationservice.repository.TokenRepository;
 import com.saadahmedev.authenticationservice.security.JwtUtil;
 import com.saadahmedev.authenticationservice.util.RequestValidator;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.MalformedJwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class AuthServiceImpl implements AuthService {
         String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
         if (authorization == null) return ServerResponse.unauthorized("Bearer token is required");
 
-        if (!authorization.startsWith("Bearer ") || authorization.length() < 25) return ServerResponse.unauthorized("Unauthorized access. Token is invalid");
+        if (!authorization.startsWith("Bearer ") && authorization.split(" ")[1] == null || authorization.split(" ")[1].isEmpty()) return ServerResponse.unauthorized("Bearer token is required");
         String token = authorization.substring(7);
 
         try {
@@ -65,6 +66,9 @@ public class AuthServiceImpl implements AuthService {
                 tokenRepository.deleteById(token);
                 log.info("Token has been deleted from database because of expiration exception");
                 return ServerResponse.unauthorized("Token has been expired");
+            }
+            if (e instanceof MalformedJwtException) {
+                return ServerResponse.unauthorized("Invalid JWT Token");
             }
             else return ServerResponse.unauthorized(e.getLocalizedMessage());
         }
