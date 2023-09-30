@@ -1,6 +1,8 @@
 package com.saadahmedev.apigateway.security;
 
+import com.saadahmedev.apigateway.entity.User;
 import com.saadahmedev.apigateway.repository.TokenRepository;
+import com.saadahmedev.apigateway.repository.UserRepository;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +33,15 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     @Autowired
     private TokenRepository tokenRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Override
     public GatewayFilter apply(JwtAuthenticationFilter.Config config) {
         return ((exchange, chain) -> {
             ServerHttpRequest request = exchange.getRequest();
             ServerHttpResponse response = exchange.getResponse();
+            ServerHttpRequest customizedRequest = null;
 
             if (routeValidator.isSecured.test(exchange.getRequest())) {
                 if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
@@ -61,9 +67,25 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                     }
                     else return sendErrorResponse(response, e.getLocalizedMessage());
                 }
+
+                String username = jwtUtil.getUsernameFromToken(token);
+                User user = userRepository.findByUsername(username).orElse(null);
+
+                assert user != null;
+                customizedRequest = request.mutate()
+                        .header("X-USER-ID", String.valueOf(user.getId()))
+                        .header("X-USER-USERNAME", user.getUsername())
+                        .header("X-USER-EMAIL", user.getEmail())
+                        .header("X-USER-PHONE", user.getPhone())
+                        .header("X-USER-FIRST_NAME", user.getFirstName())
+                        .header("X-USER-LAST_NAME", user.getLastName())
+                        .header("X-USER-FULL_NAME", user.getFirstName() + " " + user.getLastName())
+                        .header("X-USER-DATE_OF_BIRTH", user.getDateOfBirth())
+                        .header("X-USER-ROLL", user.getRole().getRole())
+                        .build();
             }
 
-            return chain.filter(exchange);
+            return chain.filter(customizedRequest == null ? exchange : exchange.mutate().request(customizedRequest).build());
         });
     }
 
