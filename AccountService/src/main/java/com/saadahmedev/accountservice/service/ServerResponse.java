@@ -41,17 +41,9 @@ public class ServerResponse {
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
-    public static class login {
-        public static ResponseEntity<?> ok(String message, String token) {
-            return ResponseEntity.ok().body(new LoginResponse(true, message, token));
-        }
-    }
-
     private static ResponseEntity<ApiResponse> getResponse(boolean status, String message, HttpStatus httpStatus) {
         return new ResponseEntity<>(new ApiResponse(status, message), httpStatus);
     }
 
     private record ApiResponse(boolean status, String message) {}
-
-    private record LoginResponse(boolean status, String message, String token) {}
 }
