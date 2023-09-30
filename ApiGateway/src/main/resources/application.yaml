@@ -5,6 +5,16 @@ spring:
   application:
     name: api-gateway
 
+  datasource:
+    url: jdbc:mysql://localhost:3306/user_service
+    username: root
+    password: vampire
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQLDialect
+    hibernate:
+      ddl-auto: update
+
   cloud:
     gateway:
       routes:
@@ -14,3 +24,7 @@ spring:
             - Path=/api/auth/**
           filters:
             - JwtAuthenticationFilter
+
+security:
+  jwt:
+    secret-key: b89fa984800a4152396afbc682b7960398076be8f6ae958df5e2f374d7800240
