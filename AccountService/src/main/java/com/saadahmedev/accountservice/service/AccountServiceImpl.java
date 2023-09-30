@@ -34,6 +34,7 @@ public class AccountServiceImpl implements AccountService {
                 .accountNumber(generateAccountNumber())
                 .accountType(openAccountRequest.getAccountType())
                 .balance(0.0)
+                .createdAt(new Date())
                 .build();
 
         try {
