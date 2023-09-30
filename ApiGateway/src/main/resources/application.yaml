@@ -25,6 +25,13 @@ spring:
           filters:
             - JwtAuthenticationFilter
 
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/api/user/**
+          filters:
+            - JwtAuthenticationFilter
+
 security:
   jwt:
     secret-key: b89fa984800a4152396afbc682b7960398076be8f6ae958df5e2f374d7800240
