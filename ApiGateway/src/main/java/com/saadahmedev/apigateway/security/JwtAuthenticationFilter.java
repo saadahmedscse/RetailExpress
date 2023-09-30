@@ -1,5 +1,7 @@
 package com.saadahmedev.apigateway.security;
 
+import com.saadahmedev.apigateway.repository.TokenRepository;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.gateway.filter.GatewayFilter;
 import org.springframework.cloud.gateway.filter.factory.AbstractGatewayFilterFactory;
@@ -22,6 +24,12 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
     @Autowired
     private RouteValidator routeValidator;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
+    @Autowired
+    private TokenRepository tokenRepository;
+
     @Override
     public GatewayFilter apply(JwtAuthenticationFilter.Config config) {
         return ((exchange, chain) -> {
@@ -30,13 +38,22 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
 
             if (routeValidator.isSecured.test(exchange.getRequest())) {
                 if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
-                    return sendErrorResponse(response, "Authorization bearer token is required");
+                    return sendErrorResponse(response, "Bearer token is required");
                 }
 
                 String token = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-                if (token == null)  return sendErrorResponse(response, "Authorization bearer token is required");
+                if (token == null)  return sendErrorResponse(response, "Bearer token is required");
+                if (!token.startsWith("Bearer ") || token.length() < 25) return sendErrorResponse(response, "Token does not match with JWT Token");
 
-                if (!token.startsWith("Bearer ") || !(token.length() > 15)) return sendErrorResponse(response, "Token does not match with JWT Token");
+                try {
+                    if (!jwtUtil.isTokenValid(token)) return sendErrorResponse(response, "Token has been expired");
+                } catch (Exception e) {
+                    if (e instanceof ExpiredJwtException) {
+                        tokenRepository.deleteById(token);
+                        return sendErrorResponse(response, "Token has been expired");
+                    }
+                    else return sendErrorResponse(response, e.getLocalizedMessage());
+                }
             }
 
             return chain.filter(exchange);
