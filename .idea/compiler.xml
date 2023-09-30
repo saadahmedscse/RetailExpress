@@ -10,12 +10,14 @@
         <module name="DiscoveryServer" />
         <module name="AuthenticationService" />
         <module name="UserService" />
+        <module name="AccountService" />
         <module name="ApiGateway" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="AccountService" options="-parameters" />
       <module name="ApiGateway" options="-parameters" />
       <module name="AuthenticationService" options="-parameters" />
       <module name="DiscoveryServer" options="-parameters" />
