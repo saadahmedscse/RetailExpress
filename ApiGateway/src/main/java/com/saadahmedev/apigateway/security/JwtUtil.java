@@ -24,6 +24,10 @@ public class JwtUtil {
     @Autowired
     private TokenRepository tokenRepository;
 
+    public String getUsernameFromToken(String token) {
+        return getClaimFromToken(token, Claims::getSubject);
+    }
+
     public boolean isTokenValid(String token) {
         Optional<Token> tokenData = tokenRepository.findById(token);
 
