@@ -1,13 +1,12 @@
 package com.saadahmedev.authenticationservice.util;
 
-import com.saadahmedev.authenticationservice.dto.ApiResponse;
 import com.saadahmedev.authenticationservice.dto.LoginRequest;
 import com.saadahmedev.authenticationservice.dto.UserRequest;
 import com.saadahmedev.authenticationservice.entity.Role;
 import com.saadahmedev.authenticationservice.repository.UserRepository;
+import com.saadahmedev.authenticationservice.service.ServerResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +50,7 @@ public class RequestValidator {
 
         if (userRequest.getPassword() == null || userRequest.getPassword().isEmpty()) return getError("Password is required");
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ServerResponse.ok();
     }
 
     public ResponseEntity<?> isLoginRequestValid(LoginRequest loginRequest) {
@@ -60,10 +59,10 @@ public class RequestValidator {
         if (userRepository.findByUsername(loginRequest.getUsername()).isEmpty()) return getError("Username does not exist");
         if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) return getError("Password is required");
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return ServerResponse.ok();
     }
 
     private ResponseEntity<?> getError(String message) {
-        return ResponseEntity.badRequest().body(new ApiResponse(false, message));
+        return ServerResponse.badRequest(message);
     }
 }
