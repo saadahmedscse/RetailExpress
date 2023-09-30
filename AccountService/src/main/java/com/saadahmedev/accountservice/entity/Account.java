@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -23,4 +25,5 @@ public class Account {
     private AccountType accountType;
     private String accountNumber;
     private double balance;
+    private Date createdAt;
 }
