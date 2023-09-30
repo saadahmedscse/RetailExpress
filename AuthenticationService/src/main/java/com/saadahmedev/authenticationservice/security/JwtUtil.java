@@ -49,8 +49,9 @@ public class JwtUtil {
         long currentTime = System.currentTimeMillis();
         return Jwts.builder().setClaims(claims)
                 .setSubject(username)
+                .setIssuer("RetailExpress - Saad Ahmed")
                 .setIssuedAt(new Date(currentTime))
-                .setExpiration(new Date(currentTime + (30L * 24 * 60 * 60 * 1000)))
+                .setExpiration(new Date(currentTime + (30L * 24 * 60 * 60 * 1000))) //30 Days Validity
                 .signWith(getSigningKey())
                 .compact();
     }
