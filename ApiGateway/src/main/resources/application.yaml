@@ -12,3 +12,5 @@ spring:
           uri: lb://authentication-service
           predicates:
             - Path=/api/auth/**
+          filters:
+            - JwtAuthenticationFilter
