@@ -5,7 +5,6 @@ import com.saadahmedev.accountservice.entity.Account;
 import com.saadahmedev.accountservice.entity.AccountType;
 import com.saadahmedev.accountservice.repository.AccountRepository;
 import jakarta.transaction.Transactional;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,7 +12,6 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
-@Slf4j
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
@@ -62,7 +60,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public ResponseEntity<?> closeAccount(long userId, String accountId, String secretKey) {
-        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or and Employee");
+        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or an Employee");
         if (accountId == null || accountId.isEmpty()) return ServerResponse.badRequest("Account number is required");
         Optional<Account> optionalAccount = accountRepository.findByUserIdAndAccountNumber(userId, accountId);
 
@@ -76,7 +74,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public ResponseEntity<?> closeAllAccount(long userId, String secretKey) {
-        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or and Employee");
+        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or an Employee");
         List<Account> accountList = accountRepository.findAllByUserId(userId);
         if (accountList.isEmpty()) return ServerResponse.badRequest("No account found associated to your id");
 
