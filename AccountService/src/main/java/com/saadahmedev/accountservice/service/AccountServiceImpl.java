@@ -61,7 +61,8 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> closeAccount(long userId, String accountId) {
+    public ResponseEntity<?> closeAccount(long userId, String accountId, String secretKey) {
+        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or and Employee");
         if (accountId == null || accountId.isEmpty()) return ServerResponse.badRequest("Account number is required");
         Optional<Account> optionalAccount = accountRepository.findByUserIdAndAccountNumber(userId, accountId);
 
@@ -74,10 +75,10 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     @Transactional
-    public ResponseEntity<?> closeAllAccount(long userId) {
+    public ResponseEntity<?> closeAllAccount(long userId, String secretKey) {
+        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or and Employee");
         List<Account> accountList = accountRepository.findAllByUserId(userId);
-
-        if (accountList.isEmpty()) return ServerResponse.badRequest("No account is associated to your id");
+        if (accountList.isEmpty()) return ServerResponse.badRequest("No account found associated to your id");
 
         try {
             accountRepository.deleteAll(accountList);
