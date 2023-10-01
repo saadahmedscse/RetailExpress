@@ -13,7 +13,7 @@ public interface AccountService {
 
     ResponseEntity<?> getAccount(String accountId);
 
-    ResponseEntity<?> closeAccount(long userId, String accountId);
+    ResponseEntity<?> closeAccount(long userId, String accountId, String secretKey);
 
-    ResponseEntity<?> closeAllAccount(long userId);
+    ResponseEntity<?> closeAllAccount(long userId, String secretKey);
 }
