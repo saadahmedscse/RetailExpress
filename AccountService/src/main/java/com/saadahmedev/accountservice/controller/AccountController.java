@@ -30,14 +30,21 @@ public class AccountController {
         return accountService.getAccount(accountId);
     }
 
-    @GetMapping("/close/{id}")
-    public ResponseEntity<?> closeAccount(HttpServletRequest request, @PathVariable("id") String accountId) {
-        return accountService.closeAccount(getUserId(request), accountId);
+    @GetMapping("/close/{userId}/{accountId}")
+    public ResponseEntity<?> closeAccount(HttpServletRequest request, @PathVariable("userId") long userId, @PathVariable("accountId") String accountId) {
+        return accountService.closeAccount(
+                userId,
+                accountId,
+                request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET")
+                );
     }
 
-    @GetMapping("/close-all")
-    private ResponseEntity<?> closeAllAccount(HttpServletRequest request) {
-        return accountService.closeAllAccount(getUserId(request));
+    @GetMapping("/close-all/{userId}")
+    private ResponseEntity<?> closeAllAccount(HttpServletRequest request, @PathVariable("userId") long userId) {
+        return accountService.closeAllAccount(
+                userId,
+                request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET")
+        );
     }
 
     private long getUserId(HttpServletRequest request) {
