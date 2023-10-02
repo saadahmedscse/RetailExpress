@@ -1,5 +1,6 @@
 package com.saadahmedev.accountservice.service;
 
+import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 public interface AccountService {
 
     ResponseEntity<?> openAccount(long userId, OpenAccountRequest openAccountRequest);
+
+    ResponseEntity<?> deposit(long userId, DepositRequest depositRequest, String secretKey);
 
     ResponseEntity<?> getAccounts(long userId);
 
