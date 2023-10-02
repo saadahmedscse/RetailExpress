@@ -1,11 +1,14 @@
 package com.saadahmedev.accountservice.service;
 
+import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.entity.Account;
 import com.saadahmedev.accountservice.entity.AccountType;
 import com.saadahmedev.accountservice.repository.AccountRepository;
+import com.saadahmedev.accountservice.util.RequestValidator;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -27,17 +30,43 @@ public class AccountServiceImpl implements AccountService {
         accountList.forEach((account -> accountTypeSet.add(account.getAccountType())));
         if (accountTypeSet.contains(openAccountRequest.getAccountType())) return ServerResponse.badRequest("User already has a " + openAccountRequest.getAccountType() + " account");
 
+        Date creationTime = new Date();
         Account account = Account.builder()
                 .userId(userId)
                 .accountNumber(generateAccountNumber())
                 .accountType(openAccountRequest.getAccountType())
                 .balance(0.0)
-                .createdAt(new Date())
+                .createdAt(creationTime)
+                .updatedAt(creationTime)
                 .build();
 
         try {
             accountRepository.save(account);
             return ServerResponse.created("Account has been opened successfully");
+        } catch (Exception e) {
+            return ServerResponse.internalServerError(e);
+        }
+    }
+
+    @Override
+    public ResponseEntity<?> deposit(long userId, DepositRequest depositRequest, String secretKey) {
+        if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or an Employee");
+        List<Account> accountList = accountRepository.findAllByUserId(userId);
+        if (accountList.isEmpty()) return ServerResponse.badRequest("User has not opened any account yet");
+
+        Map<AccountType, Account> accountMap = new HashMap<>();
+        accountList.forEach((account -> accountMap.put(account.getAccountType(), account)));
+
+        ResponseEntity<?> validationResult = RequestValidator.isDepositRequestValid(depositRequest, accountMap);
+        if (validationResult.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)) return validationResult;
+
+        Account account = accountMap.get(depositRequest.getAccountType());
+        account.setBalance(account.getBalance() + depositRequest.getAmount());
+        account.setUpdatedAt(new Date());
+
+        try {
+            Account updatedAccount = accountRepository.save(account);
+            return ServerResponse.ok(depositRequest.getAmount() + " BDT has been deposited to " + updatedAccount.getAccountNumber() + " account number at " + updatedAccount.getUpdatedAt());
         } catch (Exception e) {
             return ServerResponse.internalServerError(e);
         }
