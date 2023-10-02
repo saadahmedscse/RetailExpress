@@ -1,5 +1,6 @@
 package com.saadahmedev.accountservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.entity.Account;
@@ -7,18 +8,28 @@ import com.saadahmedev.accountservice.entity.AccountType;
 import com.saadahmedev.accountservice.repository.AccountRepository;
 import com.saadahmedev.accountservice.util.RequestValidator;
 import jakarta.transaction.Transactional;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@Slf4j
 public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
     public ResponseEntity<?> openAccount(long userId, OpenAccountRequest openAccountRequest) {
@@ -66,6 +77,18 @@ public class AccountServiceImpl implements AccountService {
 
         try {
             Account updatedAccount = accountRepository.save(account);
+
+            KafkaDepositEvent kafkaDepositEvent = KafkaDepositEvent.builder()
+                    .subject("Retail Express Amount Deposit")
+                    .email("sdf")
+                    .accountNumber(updatedAccount.getAccountNumber())
+                    .previousAmount(account.getBalance())
+                    .depositedAmount(depositRequest.getAmount())
+                    .currentAmount(updatedAccount.getBalance())
+                    .depositDate(updatedAccount.getUpdatedAt())
+                    .build();
+            kafkaTemplate.send("amount-deposit-event", new ObjectMapper().writeValueAsString(kafkaDepositEvent));
+
             return ServerResponse.ok(depositRequest.getAmount() + " BDT has been deposited to " + updatedAccount.getAccountNumber() + " account number at " + updatedAccount.getUpdatedAt());
         } catch (Exception e) {
             return ServerResponse.internalServerError(e);
@@ -124,5 +147,19 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return stringBuilder.toString();
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    private static class KafkaDepositEvent {
+        private String subject;
+        private String email;
+        private String accountNumber;
+        private double previousAmount;
+        private double depositedAmount;
+        private double currentAmount;
+        private Date depositDate;
     }
 }
