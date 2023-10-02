@@ -3,6 +3,8 @@ package com.saadahmedev.accountservice.controller;
 import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.service.AccountService;
+import com.saadahmedev.accountservice.util.HeaderType;
+import com.saadahmedev.accountservice.util.RequestResolver;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,17 +20,17 @@ public class AccountController {
 
     @PostMapping("/open")
     public ResponseEntity<?> openAccount(HttpServletRequest request, @Nullable @RequestBody OpenAccountRequest openAccountRequest) {
-        return accountService.openAccount(getUserId(request), openAccountRequest);
+        return accountService.openAccount(Long.parseLong(RequestResolver.getHeader(request, HeaderType.ID)), openAccountRequest);
     }
 
     @PostMapping("/deposit/{userId}")
     public ResponseEntity<?> deposit(HttpServletRequest request, @PathVariable("userId") long userId, @Nullable @RequestBody DepositRequest depositRequest) {
-        return accountService.deposit(userId, depositRequest, getSecretKey(request));
+        return accountService.deposit(userId, depositRequest, RequestResolver.getHeader(request, HeaderType.SECRET_KEY));
     }
 
     @GetMapping
     public ResponseEntity<?> getAccounts(HttpServletRequest request) {
-        return accountService.getAccounts(getUserId(request));
+        return accountService.getAccounts(Long.parseLong(RequestResolver.getHeader(request, HeaderType.ID)));
     }
 
     @GetMapping("/{id}")
@@ -41,7 +43,7 @@ public class AccountController {
         return accountService.closeAccount(
                 userId,
                 accountId,
-                getSecretKey(request)
+                RequestResolver.getHeader(request, HeaderType.SECRET_KEY)
                 );
     }
 
@@ -51,13 +53,5 @@ public class AccountController {
                 userId,
                 request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET")
         );
-    }
-
-    private long getUserId(HttpServletRequest request) {
-        return Long.parseLong(request.getHeader("X-USER-ID"));
-    }
-
-    private String getSecretKey(HttpServletRequest request) {
-        return request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET");
     }
 }
