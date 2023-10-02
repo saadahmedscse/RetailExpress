@@ -87,7 +87,7 @@ public class JwtAuthenticationFilter extends AbstractGatewayFilterFactory<JwtAut
                         header("X-USER-LAST_NAME", user.getLastName()),
                         header("X-USER-FULL_NAME", user.getFirstName() + " " + user.getLastName()),
                         header("X-USER-DATE_OF_BIRTH", user.getDateOfBirth()),
-                        header("X-USER-ROLL", user.getRole().getRole())
+                        header("X-USER-ROLE", user.getRole().getRole())
                 );
 
                 switch (user.getRole()) {
