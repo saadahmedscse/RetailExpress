@@ -1,5 +1,6 @@
 package com.saadahmedev.accountservice.controller;
 
+import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.service.AccountService;
 import jakarta.annotation.Nullable;
@@ -20,6 +21,11 @@ public class AccountController {
         return accountService.openAccount(getUserId(request), openAccountRequest);
     }
 
+    @PostMapping("/deposit/{userId}")
+    public ResponseEntity<?> deposit(HttpServletRequest request, @PathVariable("userId") long userId, @Nullable @RequestBody DepositRequest depositRequest) {
+        return accountService.deposit(userId, depositRequest, getSecretKey(request));
+    }
+
     @GetMapping
     public ResponseEntity<?> getAccounts(HttpServletRequest request) {
         return accountService.getAccounts(getUserId(request));
@@ -35,7 +41,7 @@ public class AccountController {
         return accountService.closeAccount(
                 userId,
                 accountId,
-                request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET")
+                getSecretKey(request)
                 );
     }
 
@@ -49,5 +55,9 @@ public class AccountController {
 
     private long getUserId(HttpServletRequest request) {
         return Long.parseLong(request.getHeader("X-USER-ID"));
+    }
+
+    private String getSecretKey(HttpServletRequest request) {
+        return request.getHeader("X-ADMIN-SECRET") == null ? request.getHeader("X-EMPLOYEE-SECRET") : request.getHeader("X-ADMIN-SECRET");
     }
 }
