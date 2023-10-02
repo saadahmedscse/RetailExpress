@@ -2,16 +2,13 @@ package com.saadahmedev.accountservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadahmedev.accountservice.dto.DepositRequest;
+import com.saadahmedev.accountservice.dto.KafkaDepositEvent;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.entity.Account;
 import com.saadahmedev.accountservice.entity.AccountType;
 import com.saadahmedev.accountservice.repository.AccountRepository;
 import com.saadahmedev.accountservice.util.RequestValidator;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -147,19 +144,5 @@ public class AccountServiceImpl implements AccountService {
         }
 
         return stringBuilder.toString();
-    }
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    private static class KafkaDepositEvent {
-        private String subject;
-        private String email;
-        private String accountNumber;
-        private double previousAmount;
-        private double depositedAmount;
-        private double currentAmount;
-        private Date depositDate;
     }
 }
