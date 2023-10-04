@@ -62,7 +62,7 @@ public class NotificationServiceImpl implements NotificationService {
         email.setTo(kafkaAccountCreationEvent.getEmail());
         email.setSubject(kafkaAccountCreationEvent.getSubject());
         email.setSentDate(new Date(kafkaAccountCreationEvent.getCreationTime()));
-        String message = "Congratulations! An " + kafkaAccountCreationEvent.getAccountType() + " account has been opened.\n" +
+        String message = "Congratulations! A " + kafkaAccountCreationEvent.getAccountType() + " account has been opened.\n" +
                 "Your account number is: " + kafkaAccountCreationEvent.getAccountNumber() + "\n" +
                 "Account opening date: " + new Date(kafkaAccountCreationEvent.getCreationTime());
         email.setText(message);
