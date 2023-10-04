@@ -15,7 +15,11 @@ public class KafkaConsumerConfig {
 
     @KafkaListener(topics = "user-creation-event", groupId = "notification-group")
     private void onUserCreationEventReceived(String event) {
-        log.info("BEGINNING" + event);
         notificationService.onUserCreationEvent(event);
+    }
+
+    @KafkaListener(topics = "amount-deposit-event", groupId = "notification-group")
+    private void onDepositEvent(String event) {
+        notificationService.onDepositEvent(event);
     }
 }
