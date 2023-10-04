@@ -20,12 +20,20 @@ public class AccountController {
 
     @PostMapping("/open")
     public ResponseEntity<?> openAccount(HttpServletRequest request, @Nullable @RequestBody OpenAccountRequest openAccountRequest) {
-        return accountService.openAccount(Long.parseLong(RequestResolver.getHeader(request, HeaderType.ID)), openAccountRequest);
+        return accountService.openAccount(
+                Long.parseLong(RequestResolver.getHeader(request, HeaderType.ID)),
+                RequestResolver.getHeader(request, HeaderType.EMAIL),
+                openAccountRequest
+        );
     }
 
     @PostMapping("/deposit/{userId}")
     public ResponseEntity<?> deposit(HttpServletRequest request, @PathVariable("userId") long userId, @Nullable @RequestBody DepositRequest depositRequest) {
-        return accountService.deposit(userId, RequestResolver.getHeader(request, HeaderType.EMAIL), depositRequest, RequestResolver.getHeader(request, HeaderType.SECRET_KEY));
+        return accountService.deposit(
+                userId, RequestResolver.getHeader(request, HeaderType.EMAIL),
+                depositRequest,
+                RequestResolver.getHeader(request, HeaderType.SECRET_KEY)
+        );
     }
 
     @GetMapping
@@ -44,7 +52,7 @@ public class AccountController {
                 userId,
                 accountId,
                 RequestResolver.getHeader(request, HeaderType.SECRET_KEY)
-                );
+        );
     }
 
     @GetMapping("/close-all/{userId}")
