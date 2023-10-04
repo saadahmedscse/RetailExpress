@@ -57,7 +57,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseEntity<?> deposit(long userId, DepositRequest depositRequest, String secretKey) {
+    public ResponseEntity<?> deposit(long userId, String email, DepositRequest depositRequest, String secretKey) {
         if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or an Employee");
         List<Account> accountList = accountRepository.findAllByUserId(userId);
         if (accountList.isEmpty()) return ServerResponse.badRequest("User has not opened any account yet");
@@ -69,6 +69,7 @@ public class AccountServiceImpl implements AccountService {
         if (validationResult.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)) return validationResult;
 
         Account account = accountMap.get(depositRequest.getAccountType());
+        double previousBalance = account.getBalance();
         account.setBalance(account.getBalance() + depositRequest.getAmount());
         account.setUpdatedAt(new Date());
 
@@ -77,12 +78,13 @@ public class AccountServiceImpl implements AccountService {
 
             KafkaDepositEvent kafkaDepositEvent = KafkaDepositEvent.builder()
                     .subject("Retail Express Amount Deposit")
-                    .email("sdf")
+                    .email(email)
                     .accountNumber(updatedAccount.getAccountNumber())
-                    .previousAmount(account.getBalance())
+                    .previousAmount(previousBalance)
                     .depositedAmount(depositRequest.getAmount())
                     .currentAmount(updatedAccount.getBalance())
-                    .depositDate(updatedAccount.getUpdatedAt())
+                    .accountType(updatedAccount.getAccountType().name())
+                    .depositTime(updatedAccount.getUpdatedAt().getTime())
                     .build();
             kafkaTemplate.send("amount-deposit-event", new ObjectMapper().writeValueAsString(kafkaDepositEvent));
 
