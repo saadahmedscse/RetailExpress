@@ -2,6 +2,7 @@ package com.saadahmedev.accountservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.saadahmedev.accountservice.dto.DepositRequest;
+import com.saadahmedev.accountservice.dto.KafkaAccountCreationEvent;
 import com.saadahmedev.accountservice.dto.KafkaDepositEvent;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.entity.Account;
@@ -29,7 +30,7 @@ public class AccountServiceImpl implements AccountService {
     private KafkaTemplate<String, String> kafkaTemplate;
 
     @Override
-    public ResponseEntity<?> openAccount(long userId, OpenAccountRequest openAccountRequest) {
+    public ResponseEntity<?> openAccount(long userId, String email, OpenAccountRequest openAccountRequest) {
         if (openAccountRequest == null || openAccountRequest.getAccountType() == null) return ServerResponse.badRequest("Account type is required. Eg.. SAVINGS, CURRENT, FDR, RDR, JOINT");
 
         List<Account> accountList = accountRepository.findAllByUserId(userId);
@@ -48,8 +49,18 @@ public class AccountServiceImpl implements AccountService {
                 .updatedAt(creationTime)
                 .build();
 
+        KafkaAccountCreationEvent kafkaAccountCreationEvent = KafkaAccountCreationEvent.builder()
+                .accountNumber(account.getAccountNumber())
+                .accountType(account.getAccountType().name())
+                .creationTime(creationTime.getTime())
+                .email(email)
+                .subject("Retail Express Account Opening")
+                .build();
+
         try {
             accountRepository.save(account);
+            kafkaTemplate.send("account-opening-event", new ObjectMapper().writeValueAsString(kafkaAccountCreationEvent));
+
             return ServerResponse.created("Account has been opened successfully");
         } catch (Exception e) {
             return ServerResponse.internalServerError(e);
