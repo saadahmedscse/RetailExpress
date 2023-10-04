@@ -1,6 +1,7 @@
 package com.saadahmedev.notificationservice.service;
 
 import com.google.gson.Gson;
+import com.saadahmedev.notificationservice.dto.KafkaDepositEvent;
 import com.saadahmedev.notificationservice.dto.UserCreationEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,26 @@ public class NotificationServiceImpl implements NotificationService {
         email.setSubject(userCreationEvent.getSubject());
         email.setText(userCreationEvent.getMessage());
         email.setSentDate(new Date());
+
+        javaMailSender.send(email);
+    }
+
+    @Override
+    public void onDepositEvent(String event) {
+        log.info(event);
+        KafkaDepositEvent kafkaDepositEvent = new Gson().fromJson(event, KafkaDepositEvent.class);
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(kafkaDepositEvent.getEmail());
+        email.setSubject(kafkaDepositEvent.getSubject());
+        email.setSentDate(new Date(kafkaDepositEvent.getDepositTime()));
+        String message = "Account Number: " + kafkaDepositEvent.getAccountNumber() + "\n" +
+                "Account Type: " + kafkaDepositEvent.getAccountType() + "\n" +
+                "Previous Amount: " + kafkaDepositEvent.getPreviousAmount() + "\n" +
+                "Deposited Amount: " + kafkaDepositEvent.getDepositedAmount() + "\n" +
+                "Current Amount: " + kafkaDepositEvent.getCurrentAmount() + "\n" +
+                "Deposit Date: " + new Date(kafkaDepositEvent.getDepositTime());
+        email.setText(message);
 
         javaMailSender.send(email);
     }
