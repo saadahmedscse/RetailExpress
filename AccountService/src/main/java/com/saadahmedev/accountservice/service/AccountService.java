@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @Service
 public interface AccountService {
 
-    ResponseEntity<?> openAccount(long userId, OpenAccountRequest openAccountRequest);
+    ResponseEntity<?> openAccount(long userId, String email, OpenAccountRequest openAccountRequest);
 
     ResponseEntity<?> deposit(long userId, String email, DepositRequest depositRequest, String secretKey);
 
