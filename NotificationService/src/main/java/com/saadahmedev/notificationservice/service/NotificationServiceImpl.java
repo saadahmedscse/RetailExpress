@@ -1,6 +1,7 @@
 package com.saadahmedev.notificationservice.service;
 
 import com.google.gson.Gson;
+import com.saadahmedev.notificationservice.dto.KafkaAccountCreationEvent;
 import com.saadahmedev.notificationservice.dto.KafkaDepositEvent;
 import com.saadahmedev.notificationservice.dto.UserCreationEvent;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +55,18 @@ public class NotificationServiceImpl implements NotificationService {
 
     @Override
     public void onAccountCreationEvent(String event) {
-        //
+        log.info(event);
+        KafkaAccountCreationEvent kafkaAccountCreationEvent = new Gson().fromJson(event, KafkaAccountCreationEvent.class);
+
+        SimpleMailMessage email = new SimpleMailMessage();
+        email.setTo(kafkaAccountCreationEvent.getEmail());
+        email.setSubject(kafkaAccountCreationEvent.getSubject());
+        email.setSentDate(new Date(kafkaAccountCreationEvent.getCreationTime()));
+        String message = "Congratulations! An " + kafkaAccountCreationEvent.getAccountType() + " account has been opened.\n" +
+                "Your account number is: " + kafkaAccountCreationEvent.getAccountNumber() + "\n" +
+                "Account opening date: " + new Date(kafkaAccountCreationEvent.getCreationTime());
+        email.setText(message);
+
+        javaMailSender.send(email);
     }
 }
