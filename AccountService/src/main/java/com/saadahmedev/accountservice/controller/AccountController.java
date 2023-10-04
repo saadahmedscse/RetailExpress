@@ -25,7 +25,7 @@ public class AccountController {
 
     @PostMapping("/deposit/{userId}")
     public ResponseEntity<?> deposit(HttpServletRequest request, @PathVariable("userId") long userId, @Nullable @RequestBody DepositRequest depositRequest) {
-        return accountService.deposit(userId, depositRequest, RequestResolver.getHeader(request, HeaderType.SECRET_KEY));
+        return accountService.deposit(userId, RequestResolver.getHeader(request, HeaderType.EMAIL), depositRequest, RequestResolver.getHeader(request, HeaderType.SECRET_KEY));
     }
 
     @GetMapping
