@@ -22,4 +22,9 @@ public class KafkaConsumerConfig {
     private void onDepositEvent(String event) {
         notificationService.onDepositEvent(event);
     }
+
+    @KafkaListener(topics = "account-opening-event", groupId = "notification-group")
+    private void onAccountOpeningEvent(String event) {
+        notificationService.onAccountCreationEvent(event);
+    }
 }
