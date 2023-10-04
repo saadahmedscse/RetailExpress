@@ -18,5 +18,6 @@ public class KafkaDepositEvent {
     private double previousAmount;
     private double depositedAmount;
     private double currentAmount;
-    private Date depositDate;
+    private String accountType;
+    private long depositTime;
 }
