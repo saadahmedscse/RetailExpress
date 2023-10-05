@@ -10,7 +10,7 @@ public interface AccountService {
 
     ResponseEntity<?> openAccount(long userId, String email, OpenAccountRequest openAccountRequest);
 
-    ResponseEntity<?> deposit(long userId, String email, DepositRequest depositRequest, String secretKey);
+    ResponseEntity<?> deposit(long userId, DepositRequest depositRequest, String secretKey);
 
     ResponseEntity<?> getAccounts(long userId);
 
