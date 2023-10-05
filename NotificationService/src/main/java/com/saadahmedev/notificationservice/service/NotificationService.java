@@ -7,4 +7,6 @@ public interface NotificationService {
     void onDepositEvent(String event);
 
     void onAccountCreationEvent(String event);
+
+    void onWithdrawEvent(String event);
 }
