@@ -1,10 +1,7 @@
 package com.saadahmedev.accountservice.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.saadahmedev.accountservice.dto.DepositRequest;
-import com.saadahmedev.accountservice.dto.KafkaAccountCreationEvent;
-import com.saadahmedev.accountservice.dto.KafkaDepositEvent;
-import com.saadahmedev.accountservice.dto.OpenAccountRequest;
+import com.saadahmedev.accountservice.dto.*;
 import com.saadahmedev.accountservice.entity.Account;
 import com.saadahmedev.accountservice.entity.AccountType;
 import com.saadahmedev.accountservice.feign.UserService;
@@ -121,6 +118,47 @@ public class AccountServiceImpl implements AccountService {
 
         if (optionalAccount.isPresent()) return ServerResponse.body(optionalAccount);
         else return ServerResponse.badRequest("Account not found");
+    }
+
+    @Override
+    public ResponseEntity<?> withdraw(long userId, WithdrawRequest withdrawRequest) {
+        List<Account> accountList = accountRepository.findAllByUserId(userId);
+        if (accountList.isEmpty()) return ServerResponse.badRequest("User has not opened any account yet");
+
+        Map<AccountType, Account> accountMap = new HashMap<>();
+        accountList.forEach((account -> accountMap.put(account.getAccountType(), account)));
+
+        ResponseEntity<?> validationResult = RequestValidator.isWithdrawRequestValid(withdrawRequest, accountMap);
+        if (validationResult.getStatusCode().isSameCodeAs(HttpStatus.BAD_REQUEST)) return validationResult;
+
+        Account account = accountMap.get(withdrawRequest.getAccountType());
+        double currentBalance = account.getBalance();
+
+        if (withdrawRequest.getAmount() > currentBalance) return ServerResponse.badRequest("Insufficient balance! Available balance: " + currentBalance);
+
+        account.setBalance(currentBalance - withdrawRequest.getAmount());
+        account.setUpdatedAt(new Date());
+
+        try {
+            accountRepository.save(account);
+
+            KafkaWithdrawEvent kafkaWithdrawEvent = KafkaWithdrawEvent.builder()
+                    .subject("Retails Express Balance Withdraw")
+                    .email(Objects.requireNonNull(userService.getUser(userId).getBody()).getEmail())
+                    .accountNumber(account.getAccountNumber())
+                    .previousAmount(currentBalance)
+                    .withdrawAmount(withdrawRequest.getAmount())
+                    .currentAmount(account.getBalance())
+                    .accountType(account.getAccountType().name())
+                    .withdrawTime(account.getUpdatedAt().getTime())
+                    .build();
+
+            kafkaTemplate.send("amount-withdraw-event", new ObjectMapper().writeValueAsString(kafkaWithdrawEvent));
+
+            return ServerResponse.ok(withdrawRequest.getAmount() + " BDT withdrawn successfully, current available balance: " + account.getBalance());
+        } catch (Exception e) {
+            return ServerResponse.internalServerError(e);
+        }
     }
 
     @Override
