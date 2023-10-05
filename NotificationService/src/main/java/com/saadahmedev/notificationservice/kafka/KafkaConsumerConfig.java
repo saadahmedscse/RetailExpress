@@ -27,4 +27,9 @@ public class KafkaConsumerConfig {
     private void onAccountOpeningEvent(String event) {
         notificationService.onAccountCreationEvent(event);
     }
+
+    @KafkaListener(topics = "amount-withdraw-event", groupId = "notification-group")
+    private void onWithdrawEvent(String event) {
+        notificationService.onWithdrawEvent(event);
+    }
 }
