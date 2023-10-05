@@ -2,6 +2,7 @@ package com.saadahmedev.accountservice.controller;
 
 import com.saadahmedev.accountservice.dto.DepositRequest;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
+import com.saadahmedev.accountservice.dto.WithdrawRequest;
 import com.saadahmedev.accountservice.service.AccountService;
 import com.saadahmedev.accountservice.util.HeaderType;
 import com.saadahmedev.accountservice.util.RequestResolver;
@@ -34,6 +35,11 @@ public class AccountController {
                 depositRequest,
                 RequestResolver.getHeader(request, HeaderType.SECRET_KEY)
         );
+    }
+
+    @PostMapping("/withdraw")
+    public ResponseEntity<?> withdraw(HttpServletRequest request, @Nullable @RequestBody WithdrawRequest withdrawRequest) {
+        return accountService.withdraw(Long.parseLong(RequestResolver.getHeader(request, HeaderType.ID)), withdrawRequest);
     }
 
     @GetMapping
