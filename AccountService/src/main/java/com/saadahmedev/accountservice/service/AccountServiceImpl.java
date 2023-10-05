@@ -7,6 +7,7 @@ import com.saadahmedev.accountservice.dto.KafkaDepositEvent;
 import com.saadahmedev.accountservice.dto.OpenAccountRequest;
 import com.saadahmedev.accountservice.entity.Account;
 import com.saadahmedev.accountservice.entity.AccountType;
+import com.saadahmedev.accountservice.feign.UserService;
 import com.saadahmedev.accountservice.repository.AccountRepository;
 import com.saadahmedev.accountservice.util.RequestValidator;
 import jakarta.transaction.Transactional;
@@ -25,6 +26,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Autowired
     private AccountRepository accountRepository;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private KafkaTemplate<String, String> kafkaTemplate;
@@ -68,7 +72,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public ResponseEntity<?> deposit(long userId, String email, DepositRequest depositRequest, String secretKey) {
+    public ResponseEntity<?> deposit(long userId, DepositRequest depositRequest, String secretKey) {
         if (secretKey == null || secretKey.isEmpty()) return ServerResponse.badRequest("This action only be performed by an Admin or an Employee");
         List<Account> accountList = accountRepository.findAllByUserId(userId);
         if (accountList.isEmpty()) return ServerResponse.badRequest("User has not opened any account yet");
@@ -89,7 +93,7 @@ public class AccountServiceImpl implements AccountService {
 
             KafkaDepositEvent kafkaDepositEvent = KafkaDepositEvent.builder()
                     .subject("Retail Express Amount Deposit")
-                    .email(email)
+                    .email(Objects.requireNonNull(userService.getUser(userId).getBody()).getEmail())
                     .accountNumber(updatedAccount.getAccountNumber())
                     .previousAmount(previousBalance)
                     .depositedAmount(depositRequest.getAmount())
